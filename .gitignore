@@ -6,3 +6,16 @@ generative_env
 
 # Ignore Python cache files
 __pycache__/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore model checkpoints
+reports/char_transformer.pt
+
+# Ignore raw data files
+data/csops_raw/*.html
+data/csops_raw/*.json
+
+# Ignore VS Code settings
+.vscode/
