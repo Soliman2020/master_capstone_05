@@ -68,6 +68,8 @@ project_05_generative_ai/
 ├── notebooks/
 │   └── generative_model.ipynb       # rubric deliverable; Restart & Run-All clean
 ├── reports/
+│   ├── Generative_AI_Analysis_Report.md   # report source (markdown)
+│   ├── Generative_AI_Analysis_Report.pdf  # rubric deliverable (PDF)
 │   ├── metrics_run.csv             # per-epoch train/val loss + bpc (tracked)
 │   ├── config.json                 # model config + seed + epochs (tracked)
 │   ├── vocab.json                  # 96-char vocab + specials (tracked)
