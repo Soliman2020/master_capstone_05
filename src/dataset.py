@@ -66,14 +66,21 @@ except ImportError:  # pragma: no cover
 #  pypdf is MIT-licensed, pure-stdlib-deps, ~350 KB. The single new
 # dep this module adds. It's the cheapest way to get the operator's genre in
 # the volume a char-LM needs (~300K chars per NIST SP 800-61 PDF).
-
-try:
-    from pypdf import PdfReader
-except ImportError as e:  # pragma: no cover
-    raise ImportError(
-        "pypdf is required for the 'pdf' catalog entries. "
-        "Install with: pip install pypdf"
-    ) from e
+#
+# Lazy import: pypdf is only needed inside _records_from_pdf. Importing it at
+# module top would make dataset.py (and therefore model.py / train.py) fail to
+# import in a torch-only env. By deferring the import to first use, the
+# CharVocab / load_text_corpus / corpus-file code paths work without pypdf,
+# and the error only surfaces if you actually try to parse a PDF.
+def _pdf_reader(path):
+    try:
+        from pypdf import PdfReader
+    except ImportError as e:  # pragma: no cover
+        raise ImportError(
+            "pypdf is required for the 'pdf' catalog entries. "
+            "Install with: pip install pypdf"
+        ) from e
+    return PdfReader(str(path))
 
 # Local conventions
 SEED = 42
@@ -232,7 +239,7 @@ def _records_from_pdf(path: Path, source_id: str) -> List[Tuple[str, str]]:
     consistent regardless of source kind.
     """
     try:
-        reader = PdfReader(str(path))
+        reader = _pdf_reader(path)
     except Exception as e:
         print(f"[parse] PDF read failed for {source_id}: {e}")
         return []
@@ -405,16 +412,40 @@ class CharVocab:
         return cls(chars=tuple(unique))
 
 
+# Unicode Private Use Area: codepoints fonts assign to ligatures/glyphs that
+# have no standard meaning. pypdf extracts these from NIST PDFs (e.g. ,
+# a fi-ligature glyph) as raw codepoints; left in the corpus they show up as
+# mojibake in generated text. Strip the three PUA ranges + the BOM.
+_PUA_RANGES = (
+    (0xE000, 0xF8FF),    # Private Use Area (where  lives)
+    (0xF0000, 0xFFFFD),  # Supplementary PUA-A
+    (0x100000, 0x10FFFD),  # Supplementary PUA-B
+)
+
+
+def _strip_pua(text: str) -> str:
+    """Remove Private-Use-Area codepoints + BOM. Keeps all standard chars."""
+    out = []
+    for ch in text:
+        cp = ord(ch)
+        if any(lo <= cp <= hi for lo, hi in _PUA_RANGES):
+            continue
+        out.append(ch)
+    return "".join(out).replace("﻿", "")
+
+
 def load_text_corpus(path: str | Path) -> str:
     """Read a corpus file as a single string. Strips '## <...>' header
-    and '## source: ...' lines (they're metadata, not genre)."""
+    and '## source: ...' lines (they're metadata, not genre), and removes
+    Private-Use-Area codepoints (PDF font glyphs that leak through pypdf)."""
     text = Path(path).read_text(encoding="utf-8")
     lines = []
     for line in text.splitlines():
         if line.startswith("## ") or line.startswith("# "):
             continue
         lines.append(line)
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    return _strip_pua(text)
 
 
 # ---------------------------------------------------------------------------
