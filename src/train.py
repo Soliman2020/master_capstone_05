@@ -1,4 +1,4 @@
-"""Training loop for the P5 char-level Transformer.
+"""Training loop for the char-level Transformer.
 
 Loads the corpus built by dataset.py, slices it into fixed-length char
 windows of size BLOCK_SIZE, trains the CharTransformer to predict the next
@@ -13,17 +13,13 @@ same unit, so the number is comparable across the literature.
 
 Why split windows, not raw text, and why that's OK here: the windows are
 sliced from one continuous corpus, so adjacent windows share text. For a
-*leakage-sensitive* task (the P3 smoke-detection lesson) that would be a
+*leakage-sensitive* task (our previous P3 smoke-detection lesson) that would be a
 problem — rows that aren't independent inflate metrics. Here the goal is
 *genre learning*, not cross-document generalization: we want the model to
 absorb the style of incident-handling prose, and "the model saw a nearby
 paragraph during training" does not manufacture a misleadingly good number
 the way shuffled sensor rows did in P3. The val loss is still meaningful as
 a convergence signal.
-
-Usage (from project_05_generative_ai/, using cnn_env's torch):
-    <cnn_env>/Scripts/python.exe src/train.py \
-        --corpus data/csops_corpus.txt --epochs 20 --batch-size 64
 
 Metrics are written to reports/metrics_run.csv; the final state_dict +
 config go to reports/char_transformer.pt and reports/config.json so the
