@@ -1,0 +1,15 @@
+{
+  "gpt_config": {
+    "block_size": 128,
+    "d_model": 192,
+    "n_layers": 6,
+    "n_heads": 6,
+    "d_mlp": 768,
+    "dropout": 0.1
+  },
+  "vocab_size": 100,
+  "seed": 42,
+  "epochs": 30,
+  "batch_size": 64,
+  "lr": 0.001
+}
