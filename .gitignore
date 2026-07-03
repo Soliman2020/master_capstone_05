@@ -1,0 +1,8 @@
+# Ignore the virtual environment directory
+generative_env
+
+# Ignore mardown files
+*.md
+
+# Ignore Python cache files
+__pycache__/
