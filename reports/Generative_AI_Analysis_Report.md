@@ -60,15 +60,9 @@ is make-believe.
 **What went wrong along the way (and how it was fixed).** Three things broke
 while building this, all caught before the final results:
 
-1. Early on, the AI produced gibberish studded with control codes like
-   `<BOS>` and `<EOS>` — because the code was accidentally sampling from an
-   *untrained* version of the model. Fixed by sampling from the trained model.
-2. Even the trained model would occasionally spit out those control codes,
-   because the "guess the next letter" step wasn't blocked from picking them.
-   Fixed by forbidding those codes in the guessing step.
-3. Some characters came out as garbage symbols (a side effect of extracting
-   text from PDF documents, which sneaks in invisible font codes). Fixed by
-   stripping those invisible codes out of the training material.
+1. Early on, the AI produced gibberish studded with control codes like `<BOS>` and `<EOS>`, because the code was accidentally sampling from an *untrained* version of the model. Fixed by sampling from the trained model.
+2. Even the trained model would occasionally spit out those control codes, because the "guess the next letter" step was not blocked from picking them. Fixed by forbidding those codes in the guessing step.
+3. Some characters came out as garbage symbols — a side effect of extracting text from PDF documents, which sneaks in invisible font codes. Fixed by stripping those invisible codes out of the training material.
 
 **How well it did.** On a standard measure for this kind of model (how
 "surprised" it is by each letter, in units called "bits per character"), it
@@ -303,26 +297,35 @@ factual nonsense in the samples above are a safety property, not a defect.
 
 Three design choices address the concern:
 
-1. **The model is positioned upstream of the operator-facing text generator.**
-   This project does not feed its own samples into any analyst-facing system.
-   In the later synthesis project, the component that produces analyst-facing
-   text is a *retrieval-grounded* summarizer that cites real policy by document
-   ID — generated text is never the source of truth. The role of this project
-   is methodological: to demonstrate that a generator can learn the operator's
-   genre, and to bound what generated text can and cannot do.
-2. **Every sample is labeled as synthetic.** The notebook's qualitative section
-   and this report both state explicitly that outputs are modeling artifacts,
-   never authoritative security guidance.
-3. **Scope minimization in the corpus.** The corpus contains no personal data,
-   no real organization names, and no operational logs — it is published
-   guidance text only. This limits both the privacy surface and the chance that
-   the model memorizes and reproduces real sensitive content. It is the same
-   scope-minimization principle applied to the broader capstone system.
+1. **The model is positioned upstream of the operator-facing text generator.** This project does not feed its own samples into any analyst-facing system. In the later synthesis project, the component that produces analyst-facing text is a *retrieval-grounded* summarizer that cites real policy by document ID — generated text is never the source of truth. The role of this project is methodological: to demonstrate that a generator can learn the operator's genre, and to bound what generated text can and cannot do.
+2. **Every sample is labeled as synthetic.** The notebook's sampling cell prefixes each generated sample with a `SYNTHETIC — model output, not real security guidance:` line, and the notebook's qualitative section plus this report state explicitly that outputs are modeling artifacts, never authoritative security guidance.
+3. **Scope minimization in the corpus.** The corpus contains no personal data, no real organization names, and no operational logs — it is published guidance text only. This limits both the privacy surface and the chance that the model memorizes and reproduces real sensitive content. It is the same scope-minimization principle applied to the broader capstone system.
 
 The CC BY-NC 4.0 license on the JPCERT/CC source also imposes a
 non-commercial-use constraint on any derivative of this corpus, which is
 respected by limiting the project to academic use and citing the source here
 and in the code.
+
+### Training-data provenance and bias risk
+
+Beyond misattribution, two provenance-related ethical concerns follow from the
+corpus composition:
+
+- **Single-voice bias.** The corpus is ~96% NIST SP 800-61 by character count,
+  so the model has effectively learned one editorial voice — a U.S. federal
+  incident-response register. Outputs will inherit that perspective and its
+  omissions; styles of incident reporting common in other sectors or regions
+  are under-represented, so the model's "neutral" register is not neutral
+  worldwide. Any downstream use must acknowledge this skew rather than treating
+  the generated style as universal.
+- **Downstream-use constraint from the NC-licensed source.** Because JPCERT/CC
+  material is CC BY-NC 4.0, any commercial derivative of this corpus (including
+  a productized summarizer trained on it) would need the NC-licensed portion
+  removed or separately licensed. This is an ethical-licensing guardrail, not
+  just a legal one: it prevents quiet commercial reuse of freely-shared
+  community content. The limitation is documented here so the choice to keep
+  or drop that source is a deliberate one for any later project that inherits
+  this corpus.
 
 ## 6. Limitations and Future Improvements
 
