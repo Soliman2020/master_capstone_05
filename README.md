@@ -81,7 +81,8 @@ project_05_generative_ai/
 │   ├── dataset.py                  # catalog-driven download + parse + char vocab
 │   ├── model.py                    # char-level GPT decoder + 3-part self-check
 │   └── train.py                    # training loop + sampling + artifacts
-├── requirements.txt                # pip freeze of the project venv
+├── requirements.txt                # direct deps only (curated for reviewers)
+├── requirements_full.txt           # full pip freeze (exact-env reference)
 └── README.md                       # This file
 ```
 
@@ -171,6 +172,13 @@ Then open `notebooks/generative_model.ipynb` in JupyterLab (or VS Code) and
 - `reports/char_transformer.pt` (the 10 MB trained weights) is intentionally
   **not** tracked — it is reproducible from `src/train.py` + the corpus in ~2
   minutes on CUDA. It is excluded by `.gitignore`.
+- `requirements.txt` lists only the **direct dependencies** the project imports
+  (torch, pypdf, certifi, matplotlib, jupyterlab, ipykernel) — curated for a
+  reviewer who wants to see what the project actually uses. The full 110-package
+  `pip freeze` of the original environment is preserved as
+  `requirements_full.txt` for exact reproduction (transitive deps included).
+  Either file can seed a fresh venv; `requirements_full.txt` is the
+  exact-environment reference.
 
 ## Self-checks (in place of a pytest suite)
 
