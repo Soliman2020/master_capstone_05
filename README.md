@@ -1,4 +1,5 @@
 # Project 5 — Generative AI: Character-Level Transformer on Incident-Handling Prose
+![](https://github.com/user-attachments/assets/bed7f474-f064-40fe-98d8-883c4ccf9e7e)
 
 This project trains a small **character-level Transformer decoder** on a public
 corpus of security incident-handling documents (NIST SP 800-61 + ENISA +
